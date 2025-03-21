@@ -440,7 +440,7 @@ public class Spider {
         try {
             Spider spider = new Spider("spider_db");
             // Crawl starting from a given URL and limit to 30 pages.
-            spider.crawl("https://comp4321-hkust.github.io/testpages/testpage.htm", 500);
+            spider.crawl("https://comp4321-hkust.github.io/testpages/testpage.htm", 30);
             spider.generateSpiderResult("spider_result.txt");
 
             // Demonstrate phrase search:
