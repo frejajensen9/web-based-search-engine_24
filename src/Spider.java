@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Spider {
     // database manager that handles all the storage stuff
@@ -251,11 +252,11 @@ public class Spider {
             String lastModDate = getLastModificationDate(url);
             int size = getPageSize(url);
 
-            // Get the top keywords and their frequencies for this page
-            String keywordFrequencies = getKeywordsFromIndex(pageID);
+            // Get the top keywords (up to 10) for this page
+            String keywordFrequencies = getKeywordsFromIndex(pageID, 10);
 
-            // Get the child links for this page
-            List<String> childLinks = getChildLinks(pageID);
+            // Get the child links (up to 10) for this page
+            List<String> childLinks = getChildLinks(pageID, 10);
 
             // Write all this info to the output file
             writer.write(title + "\n");
@@ -281,7 +282,7 @@ public class Spider {
     }
 
     // Gets the top keywords and their frequencies for a page
-    private String getKeywordsFromIndex(int pageID) throws IOException {
+    private String getKeywordsFromIndex(int pageID, int limit) throws IOException {
         Map<String, Integer> keywordFreq = new HashMap<>();
 
         // Go through all the words in the inverted index
@@ -296,10 +297,10 @@ public class Spider {
             }
         }
 
-        // Sort the keywords by frequency and return the top 20
+        // Sort the keywords by frequency and return the top `limit` keywords
         return keywordFreq.entrySet().stream()
                 .sorted((a, b) -> b.getValue() - a.getValue())
-                .limit(20) // Only keep the top 20 keywords
+                .limit(limit) // Only keep the top `limit` keywords
                 .map(entry -> entry.getKey() + " " + entry.getValue())
                 .reduce((a, b) -> a + "; " + b)
                 .orElse(""); // If there are no keywords, return an empty string
@@ -328,7 +329,7 @@ public class Spider {
     }
 
     // Gets the child links of a page
-    private List<String> getChildLinks(int pageID) throws IOException {
+    private List<String> getChildLinks(int pageID, int limit) throws IOException {
         List<String> childLinks = new ArrayList<>();
 
         // Go through all the parent-child relationships
@@ -342,7 +343,10 @@ public class Spider {
             }
         }
 
-        return childLinks;
+        // Return only up to `limit` child links
+        return childLinks.stream()
+                .limit(limit) // Only keep the top `limit` child links
+                .collect(Collectors.toList());
     }
 
     // close database connection
