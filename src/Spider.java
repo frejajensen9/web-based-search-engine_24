@@ -16,407 +16,346 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
 
-/**
- * Spider class that crawls web pages using BFS, indexes them into JDBM HTrees,
- * and now supports phrase searching over the page body.
- */
 public class Spider {
+    // database manager that handles all the storage stuff
     private RecordManager recman;
-    private final HTree pageIndex;                 // Maps URL (String) -> pageID (Integer)
-    private final HTree invertedIndexBody;         // Inverted index: stemmed word -> List<Integer> (page IDs)
-    private final HTree invertedIndexTitle;        // Maps pageID (Integer) -> title (String)
-    private final HTree parentChildLinks;          // Maps "pageID->childURL" -> Boolean (true)
 
-    // New inverted index for phrase search: stemmed word -> Map<pageID, List<Integer>>
-    // This stores the positions (token index) at which the word occurs in each page.
-    private final HTree invertedIndexBodyPositions;
+    // maps URLs to page IDs
+    private final HTree pageIndex;
 
+    // stores which words appear in which pages (for the body text)
+    private final HTree invertedIndexBody;
+
+    // stores which words appear in which pages (for the titles)
+    private final HTree invertedIndexTitle;
+
+    // keeps track of parent-child relationships between pages (like a family tree for links)
+    private final HTree parentChildLinks;
+
+    // counter to give each page a unique ID
     private int currentPageID = 0;
 
-    /**
-     * Constructor: creates a RecordManager and initializes the HTrees.
-     */
-    public Spider(String dbName) throws IOException {
+    // Constructor: sets up the database and all the maps
+    Spider(String dbName) throws IOException {
+        // create or open the database
         recman = RecordManagerFactory.createRecordManager(dbName);
+
+        // set up the maps for URLs, words, and links
         pageIndex = HTree.createInstance(recman);
         invertedIndexBody = HTree.createInstance(recman);
         invertedIndexTitle = HTree.createInstance(recman);
         parentChildLinks = HTree.createInstance(recman);
-        invertedIndexBodyPositions = HTree.createInstance(recman); // initialize the positions index
     }
 
-    /**
-     * Crawls pages starting from the given URL using BFS up to maxPages.
-     */
+    // main crawling method, starts from a URL and crawls up to maxPages
     public void crawl(String startURL, int maxPages) throws IOException, ParserException {
+        // A queue to keep track of URLs to visit (BFS style)
         Queue<String> queue = new LinkedList<>();
+        // A set to keep track of URLs we've already seen
         Set<String> visited = new HashSet<>();
+
+        // start with the first URL
         queue.add(startURL);
         visited.add(startURL);
 
+        // Keep crawling until we run out of URLs or hit the max page limit
         while (!queue.isEmpty() && currentPageID < maxPages) {
+            // grab the next URL from the queue
             String url = queue.poll();
 
+            // fetch the page content
             String pageContent = fetchPage(url);
-            if (pageContent == null) continue;
+            if (pageContent == null) continue; // Skip if we can't fetch the page
 
+            // give this page a unique ID and store it in the pageIndex
             int pageID = currentPageID++;
             pageIndex.put(url, pageID);
 
-            // Extract links and record parent-child relationships
+            // extract all the links from this page
             List<String> links = extractLinks(url, pageContent);
             for (String link : links) {
+                // If we haven't seen this link before, add it to the queue
                 if (!visited.contains(link)) {
                     visited.add(link);
                     queue.add(link);
                 }
+                // Record the parent-child relationship (this page -> child link)
                 parentChildLinks.put(pageID + "->" + link, true);
             }
 
-            // Index the page content (both title and body)
+            // Index the page (extract title, body, and build the word maps)
             indexPage(pageID, pageContent);
         }
 
+        // Save all the changes to the database
         recman.commit();
     }
 
-    /**
-     * Fetches the content of the page at the given URL.
-     */
+    // fetches the content of a web page
     private String fetchPage(String url) {
         try {
+            // Open a connection to the URL
             URLConnection connection = new URL(url).openConnection();
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder content = new StringBuilder();
             String line;
+
+            // Read the page line by line
             while ((line = reader.readLine()) != null) {
                 content.append(line);
             }
             reader.close();
+
+            // Return the page content as a big string
             return content.toString();
         } catch (Exception e) {
+            // skip if something is wrong
             System.err.println("Error fetching URL: " + url);
             return null;
         }
     }
 
-    /**
-     * Extracts all valid HTTP links from the page content using the HTMLParser library.
-     */
+    // Extracts all the links from a page
     private List<String> extractLinks(String baseURL, String content) throws ParserException, MalformedURLException {
         List<String> links = new ArrayList<>();
+
+        // Use the HTML parser to find all the <a> tags
         Parser parser = new Parser(content);
         NodeList nodeList = parser.extractAllNodesThatMatch(new NodeClassFilter(LinkTag.class));
 
+        // Go through each link tag
         for (int i = 0; i < nodeList.size(); i++) {
             LinkTag linkTag = (LinkTag) nodeList.elementAt(i);
             String link = linkTag.getLink();
 
+            // If the link is relative (like "/about"), make it absolute
             if (!link.startsWith("http")) {
                 link = new URL(new URL(baseURL), link).toString();
             }
+
+            // only keep HTTP/HTTPS links
             if (link.startsWith("http")) {
                 links.add(link);
             }
         }
+
         return links;
     }
 
-    /**
-     * Indexes the page by extracting the title and body text.
-     */
+    // Indexes a page by extracting the title and body, then building the word maps
     private void indexPage(int pageID, String content) throws ParserException, IOException {
-        // Extract and index the title
+        // Extract the title of the page
         String title = extractTitle(content);
         if (title != null && !title.isEmpty()) {
+            // Store the title in the title index
             invertedIndexTitle.put(pageID, title);
         }
 
-        // Extract the body text using StringBean (ignores links)
+        // Use the HTML parser to extract the body text (ignoring links)
         Parser parser = new Parser();
         parser.setInputHTML(content);
+
         StringBean stringBean = new StringBean();
-        stringBean.setLinks(false);
+        stringBean.setLinks(false); // don't include links in the text
         parser.visitAllNodesWith(stringBean);
+
         String body = stringBean.getStrings();
 
-        // If body text is present, index it (both for simple word search and phrase search)
+        // if there's body text, index it (tokenize, remove stop words, and stem)
         if (body != null && !body.isEmpty()) {
             indexText(pageID, body, invertedIndexBody);
         }
     }
 
-    /**
-     * Extracts the title from the page content by searching for the <title> tag.
-     */
+    // Extracts the title of a page
     private String extractTitle(String content) throws ParserException {
+        // Use the HTML parser to find the <title> tag
         Parser parser = new Parser(content);
         NodeList nodeList = parser.extractAllNodesThatMatch(new TagNameFilter("title"));
         if (nodeList != null && nodeList.size() > 0) {
+            // Return the text inside the <title> tag
             return nodeList.elementAt(0).toPlainTextString();
         }
-        return "";
+        return ""; // If there's no title, return an empty string
     }
 
-    /**
-     * Tokenizes the text, filters stop words, applies stemming (using Porter stemmer),
-     * and indexes each word.
-     *
-     * Additionally, stores the positions (token index) for each word into invertedIndexBodyPositions.
-     */
+    // Indexes the text of a page (tokenizes, removes stop words, and stems)
     private void indexText(int pageID, String text, HTree invertedIndexBody) throws IOException {
         if (text == null || text.isEmpty()) {
-            return;
+            return; // Skip if there's no text
         }
 
-        // Split text into words by non-word characters and convert to lowercase
+        // split the text into words (using non-word characters as separators)
         String[] words = text.toLowerCase().split("\\W+");
+
+        // load the list of stop words
         Set<String> stopWords = loadStopWords("src/stopwords.txt");
+
+        // Initialize the Porter stemmer (to reduce words to their root form)
         Porter stemmer = new Porter();
-        int pos = 0; // Position counter for the token within the text
 
+        // Go through each word
         for (String word : words) {
-            if (word.isEmpty()) {
-                pos++;
-                continue;
-            }
-            // Skip stop words
-            if (stopWords.contains(word)) {
-                pos++;
-                continue;
-            }
+            if (stopWords.contains(word)) continue; // Skip stop words
 
-            // Stem the word using the Porter stemmer
+            // stem the words
             String stem = stemmer.stripAffixes(word);
-            if (stem.isEmpty()) {
-                pos++;
-                continue;
-            }
+            if (stem.isEmpty()) continue; // Skip empty stems
 
-            // ----------- Update the simple inverted index (word -> list of page IDs) -----------
+            // Get the list of pages where this word appears
             List<Integer> pageIDs = (List<Integer>) invertedIndexBody.get(stem);
             if (pageIDs == null) {
                 pageIDs = new ArrayList<>();
             }
+
+            // Add this page to the list if it's not there yet
             if (!pageIDs.contains(pageID)) {
                 pageIDs.add(pageID);
             }
+
+            // Update the word map with the new list of pages
             invertedIndexBody.put(stem, pageIDs);
-
-            // ----------- Update the positions inverted index (word -> (pageID -> list of positions)) -----------
-            Map<Integer, List<Integer>> posMap = (Map<Integer, List<Integer>>) invertedIndexBodyPositions.get(stem);
-            if (posMap == null) {
-                posMap = new HashMap<>();
-            }
-            List<Integer> positions = posMap.get(pageID);
-            if (positions == null) {
-                positions = new ArrayList<>();
-            }
-            positions.add(pos); // record the current token position
-            posMap.put(pageID, positions);
-            invertedIndexBodyPositions.put(stem, posMap);
-
-            pos++;
         }
     }
 
-    /**
-     * Loads stop words from a file into a Set.
-     */
+    // Loads the list of stop words from a file
     private Set<String> loadStopWords(String filename) {
         Set<String> stopWords = new HashSet<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
+            // Read each line and add it to the set of stop words
             while ((line = reader.readLine()) != null) {
                 stopWords.add(line.trim());
             }
         } catch (IOException e) {
+            // error if file cant be read
             System.err.println("Error loading stop words: " + e.getMessage());
         }
         return stopWords;
     }
 
-    /**
-     * Generates a result file summarizing the crawled pages.
-     */
+    // generates the spider result file (spider_result.txt)
     public void generateSpiderResult(String outputFile) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
-        FastIterator iterator = pageIndex.keys();
 
+        // Go through all the URLs in the page index
+        FastIterator iterator = pageIndex.keys();
         String url;
         while ((url = (String) iterator.next()) != null) {
             int pageID = (int) pageIndex.get(url);
+
+            // Get the title of the page
             String title = getTitleFromIndex(pageID);
+
+            // Get the last modification date and size of the page
             String lastModDate = getLastModificationDate(url);
             int size = getPageSize(url);
+
+            // Get the top keywords and their frequencies for this page
             String keywordFrequencies = getKeywordsFromIndex(pageID);
+
+            // Get the child links for this page
             List<String> childLinks = getChildLinks(pageID);
 
+            // Write all this info to the output file
             writer.write(title + "\n");
             writer.write(url + "\n");
             writer.write(lastModDate + ", " + size + " bytes\n");
             writer.write("Keywords: " + keywordFrequencies + "\n");
+
             writer.write("Child Links:\n");
             for (String child : childLinks) {
                 writer.write(child + "\n");
             }
+
             writer.write("-----------------------------------------\n");
         }
+
         writer.close();
     }
 
-    /**
-     * Retrieves the title from the title index.
-     */
+    // Gets the title of a page from the title index
     private String getTitleFromIndex(int pageID) throws IOException {
         String title = (String) invertedIndexTitle.get(pageID);
-        return (title != null) ? title : "Untitled";
+        return (title != null) ? title : "Untitled"; // return "Untitled" if there's no title
     }
 
-    /**
-     * Retrieves the top keywords (with frequency) for a page from the body inverted index.
-     */
+    // Gets the top keywords and their frequencies for a page
     private String getKeywordsFromIndex(int pageID) throws IOException {
         Map<String, Integer> keywordFreq = new HashMap<>();
-        FastIterator iterator = invertedIndexBody.keys();
 
+        // Go through all the words in the inverted index
+        FastIterator iterator = invertedIndexBody.keys();
         String key;
         while ((key = (String) iterator.next()) != null) {
+            // Get the list of pages where this word appears
             List<Integer> pageIDs = (List<Integer>) invertedIndexBody.get(key);
             if (pageIDs != null && pageIDs.contains(pageID)) {
+                // Count how many times this word appears in the page
                 keywordFreq.put(key, Collections.frequency(pageIDs, pageID));
             }
         }
 
+        // Sort the keywords by frequency and return the top 20
         return keywordFreq.entrySet().stream()
                 .sorted((a, b) -> b.getValue() - a.getValue())
-                .limit(20)
+                .limit(20) // Only keep the top 20 keywords
                 .map(entry -> entry.getKey() + " " + entry.getValue())
                 .reduce((a, b) -> a + "; " + b)
-                .orElse("");
+                .orElse(""); // If there are no keywords, return an empty string
     }
 
-    /**
-     * Retrieves the last modification date of a page.
-     */
+    // Gets the last modification date of a page
     private String getLastModificationDate(String url) {
         try {
             URLConnection connection = new URL(url).openConnection();
             long lastModified = connection.getLastModified();
             return (lastModified == 0) ? "Unknown" : new Date(lastModified).toString();
         } catch (Exception e) {
-            return "Unknown";
+            return "Unknown"; // If we can't get the date, return "Unknown"
         }
     }
 
-    /**
-     * Retrieves the page size (in bytes) from the URL connection.
-     */
+    // Gets the size of a page
     private int getPageSize(String url) {
         try {
             URLConnection connection = new URL(url).openConnection();
             int contentLength = connection.getContentLength();
-            return (contentLength == -1) ? 0 : contentLength;
+            return (contentLength == -1) ? 0 : contentLength; // If the size is unknown, return 0
         } catch (Exception e) {
-            return 0;
+            return 0; // If something goes wrong, return 0
         }
     }
 
-    /**
-     * Retrieves all child links (URLs) for a given page from the parentChildLinks index.
-     */
+    // Gets the child links of a page
     private List<String> getChildLinks(int pageID) throws IOException {
         List<String> childLinks = new ArrayList<>();
-        FastIterator iterator = parentChildLinks.keys();
 
+        // Go through all the parent-child relationships
+        FastIterator iterator = parentChildLinks.keys();
         String key;
         while ((key = (String) iterator.next()) != null) {
+            // If this relationship involves the current page as the parent, add the child link
             if (key.startsWith(pageID + "->")) {
                 String childURL = key.split("->")[1];
                 childLinks.add(childURL);
             }
         }
+
         return childLinks;
     }
 
-    /**
-     * Searches for a given phrase in the page bodies.
-     * The phrase is tokenized, normalized, and stemmed.
-     * Then the method uses the positions index to verify if the words occur consecutively.
-     *
-     * @param phrase The phrase to search for.
-     * @return A list of page IDs where the phrase appears.
-     */
-    public List<Integer> searchPhrase(String phrase) throws IOException {
-        // Normalize and tokenize the phrase
-        String[] words = phrase.toLowerCase().split("\\W+");
-        Porter stemmer = new Porter();
-        List<String> stemmedWords = new ArrayList<>();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                stemmedWords.add(stemmer.stripAffixes(word));
-            }
-        }
-        if (stemmedWords.isEmpty()) return new ArrayList<>();
-
-        // Retrieve postings for the first word from the positions index.
-        Map<Integer, List<Integer>> candidatePostings = (Map<Integer, List<Integer>>) invertedIndexBodyPositions.get(stemmedWords.get(0));
-        if (candidatePostings == null) return new ArrayList<>();
-
-        // For each subsequent word, update candidate pages by verifying that for each candidate position p,
-        // the next word appears at position p+1, then p+2, etc.
-        for (int offset = 1; offset < stemmedWords.size(); offset++) {
-            Map<Integer, List<Integer>> postings = (Map<Integer, List<Integer>>) invertedIndexBodyPositions.get(stemmedWords.get(offset));
-            if (postings == null) return new ArrayList<>();
-            Map<Integer, List<Integer>> newCandidatePostings = new HashMap<>();
-
-            // Check each candidate page
-            for (Integer pageID : candidatePostings.keySet()) {
-                if (postings.containsKey(pageID)) {
-                    List<Integer> positionsList = candidatePostings.get(pageID);
-                    List<Integer> nextPositions = postings.get(pageID);
-                    List<Integer> newPositions = new ArrayList<>();
-                    // For each candidate starting position, check if the word at the required offset exists
-                    for (Integer pos : positionsList) {
-                        if (nextPositions.contains(pos + 1)) { // offset of 1 for the next word
-                            newPositions.add(pos);
-                        }
-                    }
-                    if (!newPositions.isEmpty()) {
-                        newCandidatePostings.put(pageID, newPositions);
-                    }
-                }
-            }
-            candidatePostings = newCandidatePostings;
-            if (candidatePostings.isEmpty()) return new ArrayList<>();
-        }
-        // Return the list of page IDs where the entire phrase was found.
-        return new ArrayList<>(candidatePostings.keySet());
-    }
-
-    /**
-     * Closes the database connection.
-     */
+    // close database connection
     public void close() throws IOException {
         recman.close();
     }
 
-    /**
-     * Main method: creates an instance of Spider, crawls pages, generates the result file,
-     * and demonstrates a sample phrase search.
-     */
     public static void main(String[] args) {
         try {
+            // Create a new Spider instance and start crawling
             Spider spider = new Spider("spider_db");
-            // Crawl starting from a given URL and limit to 30 pages.
             spider.crawl("https://comp4321-hkust.github.io/testpages/testpage.htm", 30);
             spider.generateSpiderResult("spider_result.txt");
-
-            // Demonstrate phrase search:
-            // For example, search for the phrase "data structures" (adjust as needed)
-            List<Integer> results = spider.searchPhrase("data structures");
-            System.out.println("Pages containing the phrase 'data structures': " + results);
-
             spider.close();
         } catch (Exception e) {
             e.printStackTrace();
