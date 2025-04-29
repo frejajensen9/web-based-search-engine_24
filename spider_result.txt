@@ -1,0 +1,234 @@
+PG
+https://comp4321-hkust.github.io/testpages/ust_cse/PG.htm
+Tue Feb 20 16:53:32 CST 2024, 3341 bytes
+Keywords: individu 1; inform 1; toefl 1; degre 1; defici 1; institu 1; complet 1; academ 1; program 1; analysi 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/ust_cse.htm
+-----------------------------------------
+UG
+https://comp4321-hkust.github.io/testpages/ust_cse/UG.htm
+Tue Feb 20 16:53:32 CST 2024, 4157 bytes
+Keywords: inform 1; shift 1; degre 1; focus 1; convers 1; complet 1; program 1; oversea 1; offer 1; beng 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/ust_cse.htm
+-----------------------------------------
+CSE department of HKUST
+https://comp4321-hkust.github.io/testpages/ust_cse.htm
+Tue Feb 20 16:53:32 CST 2024, 412 bytes
+Keywords: ug 1; admis 1; cse 1; pg 1; hkust 1; main 1; depart 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/ust_cse/PG.htm
+https://comp4321-hkust.github.io/testpages/ust_cse/UG.htm
+https://comp4321-hkust.github.io/testpages/testpage.htm
+-----------------------------------------
+News
+https://comp4321-hkust.github.io/testpages/news.htm
+Tue Feb 20 16:53:32 CST 2024, 403 bytes
+Keywords: new 1; bbc 1; cnn 1; main 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/testpage.htm
+https://comp4321-hkust.github.io/testpages/news/cnn.htm
+https://comp4321-hkust.github.io/testpages/news/bbc.htm
+-----------------------------------------
+book1
+https://comp4321-hkust.github.io/testpages/books/book1.htm
+Tue Feb 20 16:53:32 CST 2024, 1650 bytes
+Keywords: justif 1; reason 1; inform 1; subject 1; justifi 1; reader 1; atten 1; precision 1; elementari 1; main 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/books.htm
+-----------------------------------------
+book2
+https://comp4321-hkust.github.io/testpages/books/book2.htm
+Tue Feb 20 16:53:32 CST 2024, 2125 bytes
+Keywords: inform 1; data 1; prepar 1; nonbibliograph 1; research 1; via 1; concern 1; consist 1; environ 1; 112 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/books.htm
+-----------------------------------------
+book3
+https://comp4321-hkust.github.io/testpages/books/book3.htm
+Tue Feb 20 16:53:32 CST 2024, 2039 bytes
+Keywords: individu 1; inform 1; depend 1; formul 1; subject 1; shift 1; degre 1; cover 1; fix 1; mathemat 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/books.htm
+-----------------------------------------
+books
+https://comp4321-hkust.github.io/testpages/books.htm
+Tue Feb 20 16:53:32 CST 2024, 624 bytes
+Keywords: note 1; read 1; inform 1; data 1; gener 1; book 1; main 1; articl 1; readabl 1; autom 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/testpage.htm
+https://comp4321-hkust.github.io/testpages/books/book1.htm
+https://comp4321-hkust.github.io/testpages/books/book2.htm
+https://comp4321-hkust.github.io/testpages/books/book3.htm
+-----------------------------------------
+BBC news
+https://comp4321-hkust.github.io/testpages/news/bbc.htm
+Tue Feb 20 16:53:32 CST 2024, 523 bytes
+Keywords: new 1; blackburn 1; bbc 1; mp 1; commit 1; project 1; urg 1; nest 1; 1 1; 2 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/news/bbc1.htm
+https://comp4321-hkust.github.io/testpages/news/bbc2.htm
+https://comp4321-hkust.github.io/testpages/news/bbc3.htm
+https://comp4321-hkust.github.io/testpages/news.htm
+-----------------------------------------
+Dinosaur Planet (2003)
+https://comp4321-hkust.github.io/testpages/Movie/1.html
+Tue Feb 20 16:53:32 CST 2024, 3605 bytes
+Keywords: copyright 1; bio 1; dragon 1; reich 1; der 1; plai 1; denver 1; dvd 1; displai 1; giant 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Isle of Man TT 2004 Review (2004)
+https://comp4321-hkust.github.io/testpages/Movie/2.html
+Tue Feb 20 16:53:32 CST 2024, 2868 bytes
+Keywords: copyright 1; arsen 1; bio 1; plai 1; dvd 1; review 1; displai 1; season 1; 93 1; 94 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Character (1997)
+https://comp4321-hkust.github.io/testpages/Movie/3.html
+Tue Feb 20 16:53:32 CST 2024, 4008 bytes
+Keywords: housekeep 1; copyright 1; juen 1; told 1; carrol 1; bio 1; jenk 1; del 1; karakt 1; plai 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Paula Abdul's Get Up and Dance (1994)
+https://comp4321-hkust.github.io/testpages/Movie/4.html
+Tue Feb 20 16:53:32 CST 2024, 2820 bytes
+Keywords: copyright 1; bio 1; complet 1; plai 1; dvd 1; displai 1; episod 1; addition 1; 1990 1; lesson 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+The Rise and Fall of ECW (2004)
+https://comp4321-hkust.github.io/testpages/Movie/5.html
+Tue Feb 20 16:53:32 CST 2024, 3928 bytes
+Keywords: copyright 1; cultur 1; bio 1; american 1; jim 1; plai 1; 1975 1; bar 1; dvd 1; 1972 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Test page
+https://comp4321-hkust.github.io/testpages/testpage.htm
+Tue Feb 20 16:53:32 CST 2024, 627 bytes
+Keywords: thesebook 1; new 1; read 1; intern 1; test 1; movi 1; list 1; admis 1; ofcs 1; crawler 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/news.htm
+https://comp4321-hkust.github.io/testpages/Movie.htm
+https://comp4321-hkust.github.io/testpages/ust_cse.htm
+https://comp4321-hkust.github.io/testpages/books.htm
+-----------------------------------------
+Sick (1997)
+https://comp4321-hkust.github.io/testpages/Movie/6.html
+Tue Feb 20 16:53:32 CST 2024, 5243 bytes
+Keywords: caught 1; dvd 1; poor 1; zhoro 1; english 1; friend 1; volum 1; angri 1; killer 1; addition 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+8 Man (1992)
+https://comp4321-hkust.github.io/testpages/Movie/7.html
+Tue Feb 20 16:53:32 CST 2024, 3498 bytes
+Keywords: 88 1; 13th 1; copyright 1; 08 1; bio 1; 1976 1; plai 1; dvd 1; displai 1; ten 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+What the #$*! Do We Know!? (2004)
+https://comp4321-hkust.github.io/testpages/Movie/8.html
+Tue Feb 20 16:53:32 CST 2024, 4147 bytes
+Keywords: 13th 1; copyright 1; inform 1; bio 1; thirteenth 1; hei 1; der 1; plai 1; dvd 1; 1971 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Movie Index Page
+https://comp4321-hkust.github.io/testpages/Movie.htm
+Tue Feb 20 16:53:32 CST 2024, 19541 bytes
+Keywords: boyz 1; ultim 1; bad 1; musiqu 1; complet 1; vandross 1; bam 1; satan 1; algier 1; bat 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie/50.html
+https://comp4321-hkust.github.io/testpages/Movie/51.html
+https://comp4321-hkust.github.io/testpages/Movie/200.html
+https://comp4321-hkust.github.io/testpages/Movie/52.html
+https://comp4321-hkust.github.io/testpages/Movie/201.html
+https://comp4321-hkust.github.io/testpages/Movie/120.html
+https://comp4321-hkust.github.io/testpages/Movie/53.html
+https://comp4321-hkust.github.io/testpages/Movie/121.html
+https://comp4321-hkust.github.io/testpages/Movie/202.html
+https://comp4321-hkust.github.io/testpages/Movie/54.html
+-----------------------------------------
+Class of Nuke 'Em High 2 (1991)
+https://comp4321-hkust.github.io/testpages/Movie/9.html
+Tue Feb 20 16:53:32 CST 2024, 7075 bytes
+Keywords: hotmail 1; bad 1; malathion 1; gotten 1; commentsextern 1; factori 1; dvd 1; yok 1; louzil 1; sci 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+CNN news
+https://comp4321-hkust.github.io/testpages/news/cnn.htm
+Tue Feb 20 16:53:32 CST 2024, 469 bytes
+Keywords: new 1; cnn 1; caus 1; warm 1; accordion 1; sauerkraut 1; econom 1; sweet 1; chao 1; capit 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/news/cnn1.htm
+https://comp4321-hkust.github.io/testpages/news/cnn2.htm
+https://comp4321-hkust.github.io/testpages/news.htm
+-----------------------------------------
+Fighter (2001)
+https://comp4321-hkust.github.io/testpages/Movie/10.html
+Tue Feb 20 16:53:32 CST 2024, 13199 bytes
+Keywords: plane 1; shaolin 1; ultim 1; japanes 1; dei 1; den 1; moyu 1; bar 1; drunk 1; sci 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Full Frame: Documentary Shorts (1999)
+https://comp4321-hkust.github.io/testpages/Movie/11.html
+Tue Feb 20 16:53:32 CST 2024, 2700 bytes
+Keywords: trier 1; copyright 1; bio 1; american 1; plai 1; dvd 1; displai 1; episod 1; addition 1; dogumentari 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+My Favorite Brunette (1947)
+https://comp4321-hkust.github.io/testpages/Movie/12.html
+Tue Feb 20 16:53:32 CST 2024, 6432 bytes
+Keywords: plane 1; doran 1; bring 1; complet 1; commentsextern 1; businessreleas 1; offer 1; dvd 1; record 1; english 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Lord of the Rings: The Return of the King: Extended Edition: Bonus Material (2003)
+https://comp4321-hkust.github.io/testpages/Movie/13.html
+Tue Feb 20 16:53:32 CST 2024, 2997 bytes
+Keywords: copyright 1; ring 1; nation 1; bio 1; beyond 1; plai 1; dvd 1; displai 1; episod 1; addition 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Nature: Antarctica (1982)
+https://comp4321-hkust.github.io/testpages/Movie/14.html
+Tue Feb 20 16:53:32 CST 2024, 3711 bytes
+Keywords: copyright 1; cultur 1; japan 1; japanes 1; bio 1; icebreak 1; retrospect 1; plai 1; gwar 1; dvd 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Neil Diamond: Greatest Hits Live (1988)
+https://comp4321-hkust.github.io/testpages/Movie/15.html
+Tue Feb 20 16:53:32 CST 2024, 5415 bytes
+Keywords: reason 1; stupid 1; monterei 1; concert 1; commentsextern 1; denver 1; dvd 1; music 1; fabul 1; audienc 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Screamers (1996)
+https://comp4321-hkust.github.io/testpages/Movie/16.html
+Tue Feb 20 16:53:32 CST 2024, 3737 bytes
+Keywords: 13th 1; copyright 1; uomini 1; bio 1; scream 1; thirteenth 1; plai 1; dvd 1; children 1; 1970 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+7 Seconds (2005)
+https://comp4321-hkust.github.io/testpages/Movie/17.html
+Tue Feb 20 16:53:32 CST 2024, 3521 bytes
+Keywords: 01 1; copyright 1; septemb 1; 09 1; bio 1; thirti 1; plai 1; sloppi 1; 1974 1; dvd 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------
+Immortal Beloved (1994)
+https://comp4321-hkust.github.io/testpages/Movie/18.html
+Tue Feb 20 16:53:32 CST 2024, 7583 bytes
+Keywords: romeo 1; holzmatthew 1; commentsextern 1; businessreleas 1; via 1; johann 1; music 1; barri 1; favorit 1; mozart 1
+Child Links:
+https://comp4321-hkust.github.io/testpages/Movie.htm
+-----------------------------------------

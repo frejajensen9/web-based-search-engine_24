@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <Resources>
+        <!-- Configure the database directory -->
+        <PreResources
+            className="org.apache.catalina.webresources.DirResourceSet"
+            base="${catalina.base}/webapps/web-based-search-engine/WEB-INF/classes/data/"
+            webAppMount="/WEB-INF/classes/data"/>
+    </Resources>
+
+    <!-- Configure session management -->
+    <Manager pathname=""/>
+
+    <!-- Configure the maximum file size for uploads -->
+    <Parameter name="maxFileSize" value="50000000"/>
+</Context>

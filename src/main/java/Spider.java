@@ -41,11 +41,42 @@ public class Spider {
         // create or open the database
         recman = RecordManagerFactory.createRecordManager(dbName);
 
-        // set up the maps for URLs, words, and links
-        pageIndex = HTree.createInstance(recman);
-        invertedIndexBody = HTree.createInstance(recman);
-        invertedIndexTitle = HTree.createInstance(recman);
-        parentChildLinks = HTree.createInstance(recman);
+        // Try to load existing indexes, or create new ones if they don't exist
+        long pageIndexId = recman.getNamedObject("pageIndex");
+        if (pageIndexId != 0) {
+            pageIndex = HTree.load(recman, pageIndexId);
+        } else {
+            pageIndex = HTree.createInstance(recman);
+            recman.setNamedObject("pageIndex", pageIndex.getRecid());
+        }
+
+        long bodyIndexId = recman.getNamedObject("invertedIndexBody");
+        if (bodyIndexId != 0) {
+            invertedIndexBody = HTree.load(recman, bodyIndexId);
+        } else {
+            invertedIndexBody = HTree.createInstance(recman);
+            recman.setNamedObject("invertedIndexBody", invertedIndexBody.getRecid());
+        }
+
+        long titleIndexId = recman.getNamedObject("invertedIndexTitle");
+        if (titleIndexId != 0) {
+            invertedIndexTitle = HTree.load(recman, titleIndexId);
+        } else {
+            invertedIndexTitle = HTree.createInstance(recman);
+            recman.setNamedObject("invertedIndexTitle", invertedIndexTitle.getRecid());
+        }
+
+        long linksIndexId = recman.getNamedObject("parentChildLinks");
+        if (linksIndexId != 0) {
+            parentChildLinks = HTree.load(recman, linksIndexId);
+        } else {
+            parentChildLinks = HTree.createInstance(recman);
+            recman.setNamedObject("parentChildLinks", parentChildLinks.getRecid());
+        }
+
+        // Get the last used page ID
+        Long lastId = (Long) recman.getNamedObject("lastPageId");
+        currentPageID = lastId != null ? lastId.intValue() : 0;
     }
 
     // main crawling method, starts from a URL and crawls up to maxPages
@@ -95,23 +126,47 @@ public class Spider {
     // fetches the content of a web page
     private String fetchPage(String url) {
         try {
-            // Open a connection to the URL
-            URLConnection connection = new URL(url).openConnection();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder content = new StringBuilder();
-            String line;
+            URL urlObj = new URL(url);
+            URLConnection connection = urlObj.openConnection();
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
 
-            // Read the page line by line
-            while ((line = reader.readLine()) != null) {
-                content.append(line);
+            // Handle redirects (up to 5 times)
+            int redirectCount = 0;
+            while (connection instanceof java.net.HttpURLConnection && redirectCount < 5) {
+                java.net.HttpURLConnection httpConn = (java.net.HttpURLConnection) connection;
+                int responseCode = httpConn.getResponseCode();
+
+                if (responseCode >= 300 && responseCode < 400) {
+                    String newUrl = httpConn.getHeaderField("Location");
+                    if (newUrl == null) break;
+
+                    // Handle relative redirects
+                    if (!newUrl.startsWith("http")) {
+                        newUrl = new URL(urlObj, newUrl).toString();
+                    }
+
+                    connection = new URL(newUrl).openConnection();
+                    connection.setConnectTimeout(5000);
+                    connection.setReadTimeout(5000);
+                    redirectCount++;
+                } else {
+                    break;
+                }
             }
-            reader.close();
 
-            // Return the page content as a big string
-            return content.toString();
+            // Read the content
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream(), "UTF-8"))) {
+                StringBuilder content = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append("\n");
+                }
+                return content.toString();
+            }
         } catch (Exception e) {
-            // skip if something is wrong
-            System.err.println("Error fetching URL: " + url);
+            System.err.println("Error fetching URL: " + url + " - " + e.getMessage());
             return null;
         }
     }
@@ -181,41 +236,43 @@ public class Spider {
     }
 
     // Indexes the text of a page (tokenizes, removes stop words, and stems)
-    private void indexText(int pageID, String text, HTree invertedIndexBody) throws IOException {
+    private void indexText(int pageID, String text, HTree invertedIndex) throws IOException {
         if (text == null || text.isEmpty()) {
-            return; // Skip if there's no text
+            return;
         }
 
-        // split the text into words (using non-word characters as separators)
+        // Split text into words and track positions
         String[] words = text.toLowerCase().split("\\W+");
-
-        // load the list of stop words
-        Set<String> stopWords = loadStopWords("src/stopwords.txt");
-
-        // Initialize the Porter stemmer (to reduce words to their root form)
+        Set<String> stopWords = loadStopWords("src/main/java/stopwords.txt");
         Porter stemmer = new Porter();
+        
+        // Process each word and its position
+        for (int position = 0; position < words.length; position++) {
+            String word = words[position];
+            if (stopWords.contains(word)) continue;
 
-        // Go through each word
-        for (String word : words) {
-            if (stopWords.contains(word)) continue; // Skip stop words
-
-            // stem the words
             String stem = stemmer.stripAffixes(word);
-            if (stem.isEmpty()) continue; // Skip empty stems
+            if (stem.isEmpty()) continue;
 
-            // Get the list of pages where this word appears
-            List<Integer> pageIDs = (List<Integer>) invertedIndexBody.get(stem);
-            if (pageIDs == null) {
-                pageIDs = new ArrayList<>();
+            // Get or create the word entry map
+            Map<Integer, WordEntry> wordMap = (Map<Integer, WordEntry>) invertedIndex.get(stem);
+            if (wordMap == null) {
+                wordMap = new HashMap<>();
             }
 
-            // Add this page to the list if it's not there yet
-            if (!pageIDs.contains(pageID)) {
-                pageIDs.add(pageID);
+            // Get or create the word entry for this page
+            WordEntry entry = wordMap.get(pageID);
+            if (entry == null) {
+                entry = new WordEntry();
             }
 
-            // Update the word map with the new list of pages
-            invertedIndexBody.put(stem, pageIDs);
+            // Update frequency and positions
+            entry.frequency++;
+            entry.positions.add(position);
+            wordMap.put(pageID, entry);
+
+            // Update the inverted index
+            invertedIndex.put(stem, wordMap);
         }
     }
 
@@ -289,21 +346,24 @@ public class Spider {
         FastIterator iterator = invertedIndexBody.keys();
         String key;
         while ((key = (String) iterator.next()) != null) {
-            // Get the list of pages where this word appears
-            List<Integer> pageIDs = (List<Integer>) invertedIndexBody.get(key);
-            if (pageIDs != null && pageIDs.contains(pageID)) {
-                // Count how many times this word appears in the page
-                keywordFreq.put(key, Collections.frequency(pageIDs, pageID));
+            // Get the word entries map
+            Map<Integer, WordEntry> wordMap = (Map<Integer, WordEntry>) invertedIndexBody.get(key);
+            if (wordMap != null) {
+                // Get the entry for this page
+                WordEntry entry = wordMap.get(pageID);
+                if (entry != null) {
+                    // Store the word frequency
+                    keywordFreq.put(key, entry.frequency);
+                }
             }
         }
 
         // Sort the keywords by frequency and return the top `limit` keywords
         return keywordFreq.entrySet().stream()
                 .sorted((a, b) -> b.getValue() - a.getValue())
-                .limit(limit) // Only keep the top `limit` keywords
-                .map(entry -> entry.getKey() + " " + entry.getValue())
-                .reduce((a, b) -> a + "; " + b)
-                .orElse(""); // If there are no keywords, return an empty string
+                .limit(limit)
+                .map(entry -> entry.getKey() + "(" + entry.getValue() + ")")
+                .collect(Collectors.joining(", "));
     }
 
     // Gets the last modification date of a page
@@ -354,12 +414,24 @@ public class Spider {
         recman.close();
     }
 
+    // Serializable class to store word frequency and positions
+    private static class WordEntry implements Serializable {
+        private static final long serialVersionUID = 1L;
+        int frequency = 0;
+        List<Integer> positions = new ArrayList<>();
+    }
+
     public static void main(String[] args) {
         try {
             // Create a new Spider instance and start crawling
             Spider spider = new Spider("spider_db");
-            spider.crawl("https://comp4321-hkust.github.io/testpages/testpage.htm", 30);
+            spider.crawl("https://comp4321-hkust.github.io/testpages/testpage.htm", 300);
             spider.generateSpiderResult("spider_result.txt");
+            
+            // Save the last page ID
+            spider.recman.setNamedObject("lastPageId", (long) spider.currentPageID);
+            spider.recman.commit();
+            
             spider.close();
         } catch (Exception e) {
             e.printStackTrace();
